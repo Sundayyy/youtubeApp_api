@@ -1,26 +1,52 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React from "react";
+import SearchBar from "./component/SearchBar";
+import youtube, { baseParams } from "./api/youtube";
+import VideoList from "./component/VideoList";
+import VideoDetail from "./component/VideoDetail";
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+class App extends React.Component {
+  state = { videos: [], selectedVideos: null };
+
+  componentDidMount() {
+    this.handleFormSubmit("sucker");
+  }
+  handleFormSubmit = async (term) => {
+    const response = await youtube.get("search", {
+      params: {
+        ...baseParams,
+        q: term,
+      },
+    });
+    this.setState({
+      videos: response.data.items,
+      selectedVideos: response.data.items[0],
+    });
+  };
+  selectedVideos = (video) => {
+    this.setState({
+      selectedVideos: video,
+    });
+  };
+  render() {
+    return (
+      <div className="ui container">
+        <SearchBar handleSubmit={this.handleFormSubmit} />
+        <div className="ui grid">
+          <div className="ui row">
+            <div className="eleven wide column">
+              <VideoDetail video={this.state.selectedVideos} />
+            </div>
+            <div className="five wide column">
+              <VideoList
+                videos={this.state.videos}
+                selectedVideos={this.selectedVideos}
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 }
 
 export default App;
